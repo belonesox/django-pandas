@@ -108,13 +108,16 @@ def read_frame(qs, fieldnames=(), index_col=None, coerce_float=False,
         fields = qs.model._meta.fields
         fieldnames = [f.name for f in fields]
 
+    queryset = qs
     if is_values_queryset(qs):
         recs = list(qs)
     else:
-        recs = list(qs.values_list(*fieldnames))
+        queryset = qs.values_list(*fieldnames)
+        recs = list(queryset)
 
     df = pd.DataFrame.from_records(recs, columns=fieldnames,
                                    coerce_float=coerce_float)
+    # df.queryset = queryset
 
     if verbose:
         update_with_verbose(df, fieldnames, fields)
@@ -123,4 +126,4 @@ def read_frame(qs, fieldnames=(), index_col=None, coerce_float=False,
         df.set_index(index_col, inplace=True)
 
     df.index = pd.to_datetime(df.index, errors="ignore")
-    return df
+    return df #, queryset
